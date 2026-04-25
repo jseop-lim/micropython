@@ -25,3 +25,9 @@ try:
     print(pow(1, 2, 0))
 except ValueError:
     print("ValueError")
+
+# pow(x, y, None) is equivalent to pow(x, y)
+print(pow(0, 1, None))
+print(pow(1, 0, None))
+print(pow(-2, 3, None))
+print(pow(3, 8, None))
