@@ -26,3 +26,17 @@ try:
     ord(1)
 except TypeError:
     print('TypeError')
+
+# str and bytes subclasses also work
+
+
+class S(str):
+    pass
+
+
+class B(bytes):
+    pass
+
+
+print(ord(S("a")))
+print(ord(B(b"a")))
