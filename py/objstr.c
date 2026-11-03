@@ -390,8 +390,8 @@ static mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         goto wrong_args;
     }
 
-    if (mp_obj_is_small_int(args[0])) {
-        mp_int_t len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+    if (mp_obj_is_integer(args[0])) {
+        mp_int_t len = mp_obj_get_int(args[0]);
         if (len < 0) {
             mp_raise_ValueError(NULL);
         }

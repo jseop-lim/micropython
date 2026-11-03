@@ -21,3 +21,7 @@ try:
     a = bytes([1, 2, 3], 1)
 except TypeError:
     print('TypeError')
+
+# bool as the length
+print(bytes(False))
+print(bytes(True))
