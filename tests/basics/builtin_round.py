@@ -6,3 +6,6 @@ tests = [
 ]
 for t in tests:
     print(round(t))
+
+# ndigits=None is the same as omitting it
+print(round(1, None))

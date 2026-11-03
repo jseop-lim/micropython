@@ -32,3 +32,6 @@ for val in (float("inf"), float("nan")):
         round(val)
     except (ValueError, OverflowError) as e:
         print(type(e))
+
+# ndigits=None is the same as omitting it
+print(round(1.5, None))
