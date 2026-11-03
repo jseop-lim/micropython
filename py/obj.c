@@ -420,19 +420,22 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
 #if MICROPY_PY_BUILTINS_COMPLEX
 bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
-    if (mp_obj_get_float_maybe(arg, real)) {
-        *imag = 0;
-    } else if (mp_obj_is_type(arg, &mp_type_complex)) {
+    if (mp_obj_is_type(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
-    } else {
-        arg = mp_unary_op(MP_UNARY_OP_COMPLEX_MAYBE, (mp_obj_t)arg);
-        if (arg != MP_OBJ_NULL && mp_obj_is_type(arg, &mp_type_complex)) {
-            mp_obj_complex_get(arg, real, imag);
-        } else {
-            return false;
+        return true;
+    }
+    if (mp_obj_is_obj(arg) && mp_obj_is_instance_type(((mp_obj_base_t *)MP_OBJ_TO_PTR(arg))->type)) {
+        mp_obj_t c = mp_unary_op(MP_UNARY_OP_COMPLEX_MAYBE, arg);
+        if (c != MP_OBJ_NULL && mp_obj_is_type(c, &mp_type_complex)) {
+            mp_obj_complex_get(c, real, imag);
+            return true;
         }
     }
-    return true;
+    if (mp_obj_get_float_maybe(arg, real)) {
+        *imag = 0;
+        return true;
+    }
+    return false;
 }
 
 void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {

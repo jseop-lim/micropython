@@ -45,3 +45,14 @@ try:
     print(complex(Test()))
 except TypeError:
     print("TypeError")
+
+
+class TestFloatComplex:
+    def __float__(self):
+        return 1.0
+
+    def __complex__(self):
+        return 2j
+
+
+print(complex(TestFloatComplex()))
