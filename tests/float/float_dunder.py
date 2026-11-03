@@ -40,3 +40,17 @@ try:
     print(float(Test()))
 except TypeError:
     print("TypeError")
+
+
+class TestInt(int):
+    pass
+
+
+class TestIntFloat(int):
+    def __float__(self):
+        return 10.0
+
+
+print(float(TestInt(2)))
+print(1.5 + TestInt(2))
+print(float(TestIntFloat(2)))

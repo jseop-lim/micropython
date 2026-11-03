@@ -392,9 +392,12 @@ bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
     } else if (mp_obj_is_float(arg)) {
         val = mp_obj_float_get(arg);
     } else {
-        arg = mp_unary_op(MP_UNARY_OP_FLOAT_MAYBE, (mp_obj_t)arg);
-        if (arg != MP_OBJ_NULL && mp_obj_is_float(arg)) {
-            val = mp_obj_float_get(arg);
+        mp_obj_t res = mp_unary_op(MP_UNARY_OP_FLOAT_MAYBE, arg);
+        if (res != MP_OBJ_NULL && mp_obj_is_float(res)) {
+            val = mp_obj_float_get(res);
+        } else if ((res = mp_obj_cast_to_native_base(arg, MP_OBJ_FROM_PTR(&mp_type_int))) != MP_OBJ_NULL) {
+            // an int subclass without __float__ converts as its int value
+            return mp_obj_get_float_maybe(res, value);
         } else {
             return false;
         }
