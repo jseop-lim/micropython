@@ -29,6 +29,7 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
+#include <limits.h>
 #include <math.h>
 
 // M_PI is not part of the math.h standard and may not be defined
@@ -82,7 +83,13 @@ static mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
 
 #define MATH_FUN_2_FLT_INT(py_name, c_name) \
     static mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
-        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_int(y_obj))); \
+        mp_float_t x = mp_obj_get_float(x_obj); \
+        mp_int_t e = mp_obj_get_int(y_obj); \
+        if (e > INT_MAX && x != 0 && isfinite(x)) { \
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("math range error")); \
+        } \
+        /* saturate rather than truncate to the int argument of the C function */ \
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(x, e > INT_MAX ? INT_MAX : e < INT_MIN ? INT_MIN : e)); \
     } \
     static MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
 
