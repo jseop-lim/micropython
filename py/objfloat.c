@@ -306,7 +306,13 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
                 break;
             }
             #endif
-            lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
+            {
+                mp_float_t ans = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
+                if (isinf(ans) && !isinf(lhs_val) && !isinf(rhs_val)) {
+                    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("math range error"));
+                }
+                lhs_val = ans;
+            }
             break;
         case MP_BINARY_OP_DIVMOD: {
             if (rhs_val == 0) {
