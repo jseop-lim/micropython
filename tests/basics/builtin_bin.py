@@ -9,3 +9,9 @@ print(bin(12345))
 print(bin(0b10101))
 
 print(bin(0b10101010101010101010))
+
+# argument must be an integer
+try:
+    bin(None)
+except TypeError:
+    print("TypeError")

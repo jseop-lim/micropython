@@ -7,3 +7,9 @@ print(oct(-15))
 
 print(oct(12345))
 print(oct(0o12345))
+
+# argument must be an integer, a tuple is not unpacked
+try:
+    oct((1,))
+except TypeError:
+    print("TypeError")

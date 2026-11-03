@@ -119,9 +119,16 @@ static mp_obj_t mp_builtin_any(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_any_obj, mp_builtin_any);
 
-static mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
-    mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_b_brace_close_), o_in };
+static mp_obj_t mp_builtin_int_to_base(qstr fmt, mp_obj_t o_in) {
+    if (!mp_obj_is_int(o_in)) {
+        o_in = mp_obj_new_int(mp_obj_get_int(o_in));
+    }
+    mp_obj_t args[] = { MP_OBJ_NEW_QSTR(fmt), o_in };
     return mp_obj_str_format(MP_ARRAY_SIZE(args), args, NULL);
+}
+
+static mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
+    return mp_builtin_int_to_base(MP_QSTR__brace_open__colon__hash_b_brace_close_, o_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bin_obj, mp_builtin_bin);
 
@@ -202,12 +209,7 @@ static mp_obj_t mp_builtin_hash(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hash_obj, mp_builtin_hash);
 
 static mp_obj_t mp_builtin_hex(mp_obj_t o_in) {
-    #if MICROPY_PY_BUILTINS_STR_OP_MODULO
-    return mp_binary_op(MP_BINARY_OP_MODULO, MP_OBJ_NEW_QSTR(MP_QSTR__percent__hash_x), o_in);
-    #else
-    mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_x_brace_close_), o_in };
-    return mp_obj_str_format(MP_ARRAY_SIZE(args), args, NULL);
-    #endif
+    return mp_builtin_int_to_base(MP_QSTR__brace_open__colon__hash_x_brace_close_, o_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hex_obj, mp_builtin_hex);
 
@@ -329,12 +331,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);
 #endif
 
 static mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
-    #if MICROPY_PY_BUILTINS_STR_OP_MODULO
-    return mp_binary_op(MP_BINARY_OP_MODULO, MP_OBJ_NEW_QSTR(MP_QSTR__percent__hash_o), o_in);
-    #else
-    mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_o_brace_close_), o_in };
-    return mp_obj_str_format(MP_ARRAY_SIZE(args), args, NULL);
-    #endif
+    return mp_builtin_int_to_base(MP_QSTR__brace_open__colon__hash_o_brace_close_, o_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
