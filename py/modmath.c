@@ -41,9 +41,12 @@ static MP_NORETURN void math_error(void) {
     mp_raise_ValueError(MP_ERROR_TEXT("math domain error"));
 }
 
-static mp_obj_t math_generic_1(mp_obj_t x_obj, mp_float_t (*f)(mp_float_t)) {
+static mp_obj_t math_generic_1(mp_obj_t x_obj, mp_float_t (*f)(mp_float_t), bool can_overflow) {
     mp_float_t x = mp_obj_get_float(x_obj);
     mp_float_t ans = f(x);
+    if (isinf(ans) && !isinf(x) && can_overflow) {
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("math range error"));
+    }
     if ((isnan(ans) && !isnan(x)) || (isinf(ans) && !isinf(x))) {
         math_error();
     }
@@ -60,11 +63,16 @@ static mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
     return mp_obj_new_float(ans);
 }
 
-#define MATH_FUN_1(py_name, c_name) \
+#define MATH_FUN_1_EX(py_name, c_name, can_overflow) \
     static mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { \
-        return math_generic_1(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
+        return math_generic_1(x_obj, MICROPY_FLOAT_C_FUN(c_name), can_overflow); \
     } \
     static MP_DEFINE_CONST_FUN_OBJ_1(mp_math_##py_name##_obj, mp_math_##py_name);
+
+#define MATH_FUN_1(py_name, c_name) MATH_FUN_1_EX(py_name, c_name, false)
+
+// for functions whose only infinite results from a finite argument are overflows
+#define MATH_FUN_1_OVERFLOW(py_name, c_name) MATH_FUN_1_EX(py_name, c_name, true)
 
 #define MATH_FUN_1_TO_BOOL(py_name, c_name) \
     static mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { return mp_obj_new_bool(c_name(mp_obj_get_float(x_obj))); } \
@@ -116,18 +124,18 @@ MATH_FUN_2(pow, pow_func)
 MATH_FUN_2(pow, pow)
 #endif
 // exp(x)
-MATH_FUN_1(exp, exp)
+MATH_FUN_1_OVERFLOW(exp, exp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 // expm1(x)
-MATH_FUN_1(expm1, expm1)
+MATH_FUN_1_OVERFLOW(expm1, expm1)
 // log2(x)
 MATH_FUN_1(log2, log2)
 // log10(x)
 MATH_FUN_1(log10, log10)
 // cosh(x)
-MATH_FUN_1(cosh, cosh)
+MATH_FUN_1_OVERFLOW(cosh, cosh)
 // sinh(x)
-MATH_FUN_1(sinh, sinh)
+MATH_FUN_1_OVERFLOW(sinh, sinh)
 // tanh(x)
 MATH_FUN_1(tanh, tanh)
 // acosh(x)
@@ -205,17 +213,18 @@ MATH_FUN_1(erf, erf)
 // erfc(x): return the complementary error function of x
 MATH_FUN_1(erfc, erfc)
 // gamma(x): return the gamma function of x
-#if MICROPY_PY_MATH_GAMMA_FIX_NEGINF
 static mp_float_t MICROPY_FLOAT_C_FUN(tgamma_func)(mp_float_t x) {
-    if (isinf(x) && x < 0) {
+    // the pole at zero is a domain error, any other infinite result an overflow
+    if (x == 0
+        #if MICROPY_PY_MATH_GAMMA_FIX_NEGINF
+        || (isinf(x) && x < 0)
+        #endif
+        ) {
         math_error();
     }
     return MICROPY_FLOAT_C_FUN(tgamma)(x);
 }
-MATH_FUN_1(gamma, tgamma_func)
-#else
-MATH_FUN_1(gamma, tgamma)
-#endif
+MATH_FUN_1_OVERFLOW(gamma, tgamma_func)
 // lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
 #endif
