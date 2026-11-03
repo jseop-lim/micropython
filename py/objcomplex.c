@@ -233,6 +233,9 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
                 mp_float_t x3 = rhs_real * ln1 - rhs_imag * arg1;
                 mp_float_t y3 = rhs_imag * ln1 + rhs_real * arg1;
                 mp_float_t exp_x3 = MICROPY_FLOAT_C_FUN(exp)(x3);
+                if (isinf(exp_x3) && !isinf(lhs_real) && !isinf(lhs_imag) && !isinf(rhs_real) && !isinf(rhs_imag)) {
+                    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("complex exponentiation"));
+                }
                 lhs_real = exp_x3 * MICROPY_FLOAT_C_FUN(cos)(y3);
                 lhs_imag = exp_x3 * MICROPY_FLOAT_C_FUN(sin)(y3);
             }
