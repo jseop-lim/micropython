@@ -517,6 +517,9 @@ static mp_obj_t mp_builtin_sum(size_t n_args, const mp_obj_t *args) {
             value = MP_OBJ_NEW_SMALL_INT(0);
             break;
         default:
+            if (mp_obj_is_str_or_bytes(args[1])) {
+                mp_raise_TypeError(MP_ERROR_TEXT("can't sum strings"));
+            }
             value = args[1];
             break;
     }

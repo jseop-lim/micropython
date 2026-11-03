@@ -12,3 +12,13 @@ tests = (
 for test in tests:
     print(sum(test))
     print(sum(test, -2))
+
+# a str or bytes start value is rejected
+try:
+    sum((), "a")
+except TypeError:
+    print("TypeError")
+try:
+    sum([], b"a")
+except TypeError:
+    print("TypeError")
