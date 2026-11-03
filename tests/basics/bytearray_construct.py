@@ -11,3 +11,7 @@ try:
     print(bytearray('1234'))
 except TypeError:
     print("TypeError")
+
+# bool as the length
+print(bytearray(False))
+print(bytearray(True))
