@@ -303,6 +303,7 @@ static mp_large_float_uint_t accept_digit(mp_large_float_uint_t p_mantissa, unsi
 
 // Helper to parse an unsigned decimal number into a mp_float_t
 const char *mp_parse_float_internal(const char *str, size_t len, mp_float_t *res) {
+    const char *start = str;
     const char *top = str + len;
 
     parse_dec_in_t in = PARSE_DEC_IN_INTG;
@@ -359,7 +360,7 @@ const char *mp_parse_float_internal(const char *str, size_t len, mp_float_t *res
             if (str == top) {
                 return NULL;
             }
-        } else if (dig == '_') {
+        } else if (dig == '_' && str - 1 > start && (unsigned char)(str[-2] - '0') <= 9 && str < top && (unsigned char)(*str - '0') <= 9) {
             continue;
         } else {
             // unknown character
