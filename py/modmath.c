@@ -82,7 +82,12 @@ static mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
 
 #define MATH_FUN_2_FLT_INT(py_name, c_name) \
     static mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
-        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_int(y_obj))); \
+        mp_float_t x = mp_obj_get_float(x_obj); \
+        /* an exponent too negative for a machine word underflows to a signed zero */ \
+        if (mp_obj_is_exact_type(y_obj, &mp_type_int) && mp_obj_is_true(mp_binary_op(MP_BINARY_OP_LESS_EQUAL, y_obj, mp_obj_new_int_from_ll(MP_INT_MIN)))) { \
+            return mp_obj_new_float(isfinite(x) ? MICROPY_FLOAT_C_FUN(copysign)(0, x) : x); \
+        } \
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(x, mp_obj_get_int(y_obj))); \
     } \
     static MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
 
