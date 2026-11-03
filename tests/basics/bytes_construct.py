@@ -21,3 +21,14 @@ try:
     a = bytes([1, 2, 3], 1)
 except TypeError:
     print('TypeError')
+
+# int subclass as the length
+class MyInt(int):
+    pass
+
+print(bytes(MyInt(0)))
+print(bytes(MyInt(2)))
+try:
+    bytes(MyInt(-1))
+except ValueError:
+    print('ValueError')
