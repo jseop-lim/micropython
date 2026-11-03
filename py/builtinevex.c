@@ -80,15 +80,8 @@ static mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
 static mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
-    // get the source
-    size_t str_len;
-    const char *str = mp_obj_str_get_data(args[0], &str_len);
-
     // get the filename
     qstr filename = mp_obj_str_get_qstr(args[1]);
-
-    // create the lexer
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(filename, str, str_len, 0);
 
     // get the compile mode
     qstr mode = mp_obj_str_get_qstr(args[2]);
@@ -106,6 +99,11 @@ static mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("bad compile mode"));
     }
+
+    // get the source and create the lexer
+    size_t str_len;
+    const char *str = mp_obj_str_get_data(args[0], &str_len);
+    mp_lexer_t *lex = mp_lexer_new_from_str_len(filename, str, str_len, 0);
 
     #if MICROPY_PY_BUILTINS_CODE >= MICROPY_PY_BUILTINS_CODE_BASIC
 

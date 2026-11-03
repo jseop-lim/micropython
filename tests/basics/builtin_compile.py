@@ -38,6 +38,12 @@ def test():
     except ValueError:
         print("ValueError")
 
+    # bad mode is reported before a bad source
+    try:
+        compile(None, 'file', '')
+    except ValueError:
+        print("ValueError")
+
     # exception within compiled code
     try:
         exec(compile('noexist', 'file', 'exec'))
