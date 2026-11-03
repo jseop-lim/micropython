@@ -919,7 +919,15 @@ mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
             return ((mp_getiter_fun_t)MP_OBJ_TYPE_GET_SLOT(type, iter))(self->subobj[0], iter_buf);
         }
     } else {
-        return mp_call_method_n_kw(0, 0, member);
+        mp_obj_t iter = mp_call_method_n_kw(0, 0, member);
+        // __iter__ must return an iterator: a native one, or an object with __next__
+        if (!(mp_obj_get_type(iter)->flags & (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM))) {
+            mp_load_method_maybe(iter, MP_QSTR___next__, member);
+            if (member[0] == MP_OBJ_NULL) {
+                mp_raise_TypeError(NULL);
+            }
+        }
+        return iter;
     }
 }
 

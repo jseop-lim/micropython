@@ -18,6 +18,15 @@ try:
 except TypeError:
     print('TypeError')
 
+# __iter__ returns an object that is not an iterator
+class NotIterable:
+    def __iter__(self):
+        return [1]
+try:
+    iter(NotIterable())
+except TypeError:
+    print('TypeError')
+
 class MyStopIteration(StopIteration):
     pass
 
