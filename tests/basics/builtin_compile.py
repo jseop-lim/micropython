@@ -38,6 +38,16 @@ def test():
     except ValueError:
         print("ValueError")
 
+    # flags must be an int
+    try:
+        compile('1', 'file', 'exec', None)
+    except TypeError:
+        print("TypeError")
+    try:
+        compile('1', 'file', '', None)
+    except TypeError:
+        print("TypeError")
+
     # exception within compiled code
     try:
         exec(compile('noexist', 'file', 'exec'))

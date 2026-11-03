@@ -78,7 +78,10 @@ static mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
 }
 
 static mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
+    // flags, dont_inherit and optimize are ignored but must be ints
+    for (size_t i = 3; i < n_args; i++) {
+        mp_obj_get_int(args[i]);
+    }
 
     // get the source
     size_t str_len;
