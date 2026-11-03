@@ -57,8 +57,15 @@ static mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
     mp_float_t x = mp_obj_get_float(x_obj);
     mp_float_t y = mp_obj_get_float(y_obj);
     mp_float_t ans = f(x, y);
-    if ((isnan(ans) && !isnan(x) && !isnan(y)) || (isinf(ans) && !isinf(x) && !isinf(y))) {
+    if (isnan(ans) && !isnan(x) && !isnan(y)) {
         math_error();
+    }
+    if (isinf(ans) && !isinf(x) && !isinf(y)) {
+        // a zero base is a pole, any other infinite result is an overflow
+        if (x == 0) {
+            math_error();
+        }
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("math range error"));
     }
     return mp_obj_new_float(ans);
 }
