@@ -2535,6 +2535,10 @@ qstr mp_obj_str_get_qstr(mp_obj_t self_in) {
         mp_obj_str_t *self = MP_OBJ_TO_PTR(self_in);
         return qstr_from_strn((char *)self->data, self->len);
     } else {
+        mp_obj_t native = mp_obj_cast_to_native_base(self_in, MP_OBJ_FROM_PTR(&mp_type_str));
+        if (native != MP_OBJ_NULL) {
+            return mp_obj_str_get_qstr(native);
+        }
         bad_implicit_conversion(self_in);
     }
 }
