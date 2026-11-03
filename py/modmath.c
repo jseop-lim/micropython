@@ -82,7 +82,12 @@ static mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
 
 #define MATH_FUN_2_FLT_INT(py_name, c_name) \
     static mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
-        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_int(y_obj))); \
+        mp_float_t x = mp_obj_get_float(x_obj); \
+        mp_float_t ans = MICROPY_FLOAT_C_FUN(c_name)(x, mp_obj_get_int(y_obj)); \
+        if (isinf(ans) && !isinf(x)) { \
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("math range error")); \
+        } \
+        return mp_obj_new_float(ans); \
     } \
     static MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
 
