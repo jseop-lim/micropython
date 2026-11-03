@@ -32,6 +32,7 @@
 
 #include "py/objtype.h"
 #include "py/runtime.h"
+#include "py/cstack.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -1476,34 +1477,31 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
 }
 
 static mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
-    size_t len;
-    mp_obj_t *items;
-    if (mp_obj_is_type(classinfo, &mp_type_type)) {
-        len = 1;
-        items = &classinfo;
-    } else if (mp_obj_is_type(classinfo, &mp_type_tuple)) {
+    if (mp_obj_is_type(classinfo, &mp_type_tuple)) {
+        mp_cstack_check();
+        size_t len;
+        mp_obj_t *items;
         mp_obj_tuple_get(classinfo, &len, &items);
-    } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("issubclass() arg 2 must be a class or a tuple of classes"));
-    }
-
-    for (size_t i = 0; i < len; i++) {
-        // We explicitly check for 'object' here since no-one explicitly derives from it
-        if (items[i] == MP_OBJ_FROM_PTR(&mp_type_object) || mp_obj_is_subclass_fast(object, items[i])) {
-            return mp_const_true;
+        for (size_t i = 0; i < len; i++) {
+            if (mp_obj_is_subclass(object, items[i]) == mp_const_true) {
+                return mp_const_true;
+            }
         }
+        return mp_const_false;
     }
-    return mp_const_false;
-}
 
-static mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
     if (!mp_obj_is_type(object, &mp_type_type)) {
         mp_raise_TypeError(MP_ERROR_TEXT("issubclass() arg 1 must be a class"));
     }
-    return mp_obj_is_subclass(object, classinfo);
+    if (!mp_obj_is_type(classinfo, &mp_type_type)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("issubclass() arg 2 must be a class or a tuple of classes"));
+    }
+
+    // We explicitly check for 'object' here since no-one explicitly derives from it
+    return mp_obj_new_bool(classinfo == MP_OBJ_FROM_PTR(&mp_type_object) || mp_obj_is_subclass_fast(object, classinfo));
 }
 
-MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_issubclass_obj, mp_builtin_issubclass);
+MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_issubclass_obj, mp_obj_is_subclass);
 
 static mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
     return mp_obj_is_subclass(MP_OBJ_FROM_PTR(mp_obj_get_type(object)), classinfo);
