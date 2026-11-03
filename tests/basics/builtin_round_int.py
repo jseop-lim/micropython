@@ -16,3 +16,7 @@ tests = [
 ]
 for t in tests:
     print(round(*t))
+
+# a bool is rounded as an int
+print(round(True, 1))
+print(round(False, -1))
