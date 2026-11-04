@@ -12,3 +12,14 @@ except OverflowError:
     print("OverflowError")
 
 print(math.ldexp(1.0, -(2**32)))
+
+try:
+    math.ldexp(1.0, 2**64)
+except OverflowError:
+    print("OverflowError")
+
+print(math.ldexp(1.0, -(2**64)))
+print(math.ldexp(-1.0, -(2**64)))
+print(math.ldexp(0.0, 2**64))
+print(math.ldexp(float("inf"), 2**64))
+print(math.ldexp(float("inf"), -(2**64)))

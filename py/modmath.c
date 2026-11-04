@@ -25,6 +25,7 @@
  */
 
 #include "py/builtin.h"
+#include "py/objint.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
@@ -84,9 +85,16 @@ static mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
 #define MATH_FUN_2_FLT_INT(py_name, c_name) \
     static mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
         mp_float_t x = mp_obj_get_float(x_obj); \
-        mp_int_t e = mp_obj_get_int(y_obj); \
-        /* saturate rather than truncate to the int argument of the C function */ \
-        mp_float_t ans = MICROPY_FLOAT_C_FUN(c_name)(x, e > INT_MAX ? INT_MAX : e < INT_MIN ? INT_MIN : e); \
+        int e; \
+        if (mp_obj_is_exact_type(y_obj, &mp_type_int)) { \
+            /* a big int exponent is far outside the useful range, so saturate it by sign */ \
+            e = mp_obj_int_sign(y_obj) < 0 ? INT_MIN : INT_MAX; \
+        } else { \
+            mp_int_t i = mp_obj_get_int(y_obj); \
+            /* saturate rather than truncate to the int argument of the C function */ \
+            e = i > INT_MAX ? INT_MAX : i < INT_MIN ? INT_MIN : i; \
+        } \
+        mp_float_t ans = MICROPY_FLOAT_C_FUN(c_name)(x, e); \
         if (isinf(ans) && !isinf(x)) { \
             mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("math range error")); \
         } \
